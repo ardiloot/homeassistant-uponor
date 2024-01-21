@@ -301,7 +301,7 @@ class UponorStateProxy:
         if dump_raw_data:
             stamp = datetime.now()
 
-            output_dir = os.path.join(self.hass.config.path(), "www")
+            output_dir = os.path.join(self._hass.config.path(), "www")
             if not os.path.isdir(output_dir):
                 os.makedirs(output_dir, exist_ok=True)
                 
