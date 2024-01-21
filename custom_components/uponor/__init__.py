@@ -1,9 +1,12 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
 import math
 import ipaddress
 import requests
 import voluptuous as vol
 import logging
+import os
+import json
+
 
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
@@ -293,6 +296,19 @@ class UponorStateProxy:
     async def async_update(self, event_time):
         self._data = await self._hass.async_add_executor_job(lambda: self._client.get_data())
         async_dispatcher_send(self._hass, SIGNAL_UPONOR_STATE_UPDATE)
+
+        dump_raw_data = True
+        if dump_raw_data:
+            stamp = datetime.now()
+
+            output_dir = os.path.join(self.hass.config.path(), "www")
+            if not os.path.isdir(output_dir):
+                os.makedirs(output_dir, exist_ok=True)
+                
+            output_path = os.path.join(output_dir, "%s.json" % (stamp.strftime("%Y-%m-%d")))
+            _LOGGER.info("save data: %s" % (output_path))
+            with open(output_path, "a") as f:
+                f.write("%s\n" % (json.dumps({"stamp": stamp.isoformat(), "data": self._data})))
 
     def set_variable(self, var_name, var_value):
         self._client.send_data({var_name: var_value})
